@@ -3,9 +3,11 @@ package com.example.Employeemngt.service;
 import com.example.Employeemngt.entity.Employee;
 import com.example.Employeemngt.repository.EmployeeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 @Service
@@ -13,6 +15,9 @@ public class EmployeeService {
 
     @Autowired
     private EmployeeRepository employeeRepository;
+
+    @Autowired
+    private MessageSource messageSource;
 
     public List<Employee> getAllEmployees() {
         return employeeRepository.findAll();
@@ -22,19 +27,27 @@ public class EmployeeService {
         return employeeRepository.findById(id);
     }
 
-    public Employee createEmployee(Employee employee) {
-        return employeeRepository.save(employee);
+    public String createEmployee(Employee employee) {
+        employeeRepository.save(employee);
+        return "employee.added";
     }
 
-    public Employee updateEmployee(Long id, Employee employeeDetails) {
-        Employee employee = employeeRepository.findById(id).orElseThrow();
+    public String updateEmployee(Long id, Employee employeeDetails) {
+        Employee employee = employeeRepository.findById(id).orElseThrow(() ->
+                new RuntimeException("employee.not.found")
+        );
         employee.setName(employeeDetails.getName());
         employee.setDepartment(employeeDetails.getDepartment());
         employee.setSalary(employeeDetails.getSalary());
-        return employeeRepository.save(employee);
+        employeeRepository.save(employee);
+        return "employee.added";
     }
 
-    public void deleteEmployee(Long id) {
+    public String deleteEmployee(Long id) {
+        if (!employeeRepository.existsById(id)) {
+            throw new RuntimeException("employee.not.found");
+        }
         employeeRepository.deleteById(id);
+        return "employee.deleted";
     }
 }
